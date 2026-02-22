@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>쇼핑 리스트</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 48px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 480px;
+      height: fit-content;
+      padding: 32px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #718096;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #2d3748;
+    }
+
+    .input-row input:focus {
+      border-color: #667eea;
+    }
+
+    .input-row input::placeholder {
+      color: #a0aec0;
+    }
+
+    .btn-add {
+      padding: 10px 18px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-add:hover { background: #5a67d8; }
+    .btn-add:active { transform: scale(0.97); }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .filter-btn {
+      padding: 5px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 20px;
+      background: transparent;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #718096;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: #667eea;
+      border-color: #667eea;
+      color: #fff;
+    }
+
+    .filter-btn:not(.active):hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 48px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f7fafc;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, opacity 0.2s;
+      animation: slideIn 0.2s ease;
+    }
+
+    .list-item.done {
+      opacity: 0.5;
+    }
+
+    .list-item:hover {
+      border-color: #e2e8f0;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #cbd5e0;
+      background: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .check svg { display: none; }
+
+    .done .check {
+      background: #48bb78;
+      border-color: #48bb78;
+    }
+
+    .done .check svg { display: block; }
+
+    .item-text {
+      flex: 1;
+      font-size: 0.95rem;
+      color: #2d3748;
+      word-break: break-word;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .done .item-text {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #cbd5e0;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 0;
+      flex-shrink: 0;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .btn-del:hover {
+      color: #fc8181;
+      background: #fff5f5;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 24px 0;
+      color: #a0aec0;
+      font-size: 0.9rem;
+    }
+
+    .empty span { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+    .footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #a0aec0;
+    }
+
+    .btn-clear {
+      background: none;
+      border: none;
+      color: #fc8181;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0;
+    }
+
+    .btn-clear:hover { text-decoration: underline; }
+    .btn-clear:disabled { color: #e2e8f0; cursor: default; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🛒 쇼핑 리스트</h1>
+  <p class="subtitle" id="subtitle">아이템을 추가해 보세요</p>
+
+  <div class="input-row">
+    <input id="itemInput" type="text" placeholder="예) 우유, 계란, 사과..." maxlength="60" />
+    <button class="btn-add" onclick="addItem()">추가</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all"   onclick="setFilter('all')">전체</button>
+    <button class="filter-btn"        data-filter="active" onclick="setFilter('active')">미완료</button>
+    <button class="filter-btn"        data-filter="done"   onclick="setFilter('done')">완료</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+
+  <div class="footer">
+    <span id="countText"></span>
+    <button class="btn-clear" id="clearBtn" onclick="clearDone()">완료 항목 삭제</button>
+  </div>
+</div>
+
+<script>
+  let items = JSON.parse(localStorage.getItem('shoppingList') || '[]');
+  let filter = 'all';
+
+  const input    = document.getElementById('itemInput');
+  const listEl   = document.getElementById('list');
+  const subtitle  = document.getElementById('subtitle');
+  const countText = document.getElementById('countText');
+  const clearBtn  = document.getElementById('clearBtn');
+
+  function save() {
+    localStorage.setItem('shoppingList', JSON.stringify(items));
+  }
+
+  function addItem() {
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    items.unshift({ id: Date.now(), text, done: false });
+    input.value = '';
+    save();
+    render();
+    input.focus();
+  }
+
+  function toggleItem(id) {
+    const item = items.find(i => i.id === id);
+    if (item) item.done = !item.done;
+    save();
+    render();
+  }
+
+  function deleteItem(id) {
+    items = items.filter(i => i.id !== id);
+    save();
+    render();
+  }
+
+  function clearDone() {
+    items = items.filter(i => !i.done);
+    save();
+    render();
+  }
+
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === f);
+    });
+    render();
+  }
+
+  function render() {
+    const visible = items.filter(i => {
+      if (filter === 'active') return !i.done;
+      if (filter === 'done')   return  i.done;
+      return true;
+    });
+
+    const total   = items.length;
+    const doneN   = items.filter(i => i.done).length;
+    const activeN = total - doneN;
+
+    subtitle.textContent = total === 0
+      ? '아이템을 추가해 보세요'
+      : `총 ${total}개 · 완료 ${doneN}개`;
+
+    countText.textContent = activeN > 0 ? `남은 항목 ${activeN}개` : (total > 0 ? '모두 완료!' : '');
+
+    clearBtn.disabled = doneN === 0;
+
+    if (visible.length === 0) {
+      listEl.innerHTML = `
+        <li class="empty">
+          <span>${filter === 'done' ? '✅' : filter === 'active' ? '🎉' : '🛒'}</span>
+          ${filter === 'done' ? '완료된 항목이 없습니다' :
+            filter === 'active' ? '남은 항목이 없습니다' : '아직 아이템이 없어요'}
+        </li>`;
+      return;
+    }
+
+    listEl.innerHTML = visible.map(item => `
+      <li class="list-item ${item.done ? 'done' : ''}" data-id="${item.id}">
+        <div class="check" onclick="toggleItem(${item.id})">
+          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+            <path d="M1 5l3.5 3.5L11 1" stroke="#fff" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="item-text" onclick="toggleItem(${item.id})">${escHtml(item.text)}</span>
+        <button class="btn-del" onclick="deleteItem(${item.id})" title="삭제">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round"/>
+          </svg>
+        </button>
+      </li>`).join('');
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+
+  render();
+</script>
+</body>
+</html>
